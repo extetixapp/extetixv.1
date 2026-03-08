@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-inter: 'Inter', sans-serif;
+  
+  /* Paleta Extetix */
+  --color-bg: #FAFAFA;
+  --color-text: #1A1A1A;
+  --color-gold: #C9A962;
+  --color-gold-light: #D4B978;
+  --color-charcoal: #2D2D2D;
+  --color-gray: #F5F5F5;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-inter);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: var(--font-cormorant);
+    font-weight: 500;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#1A1A1A] text-white px-8 py-4 rounded-full font-medium 
+           transition-all duration-300 hover:bg-[#C9A962] hover:text-[#1A1A1A]
+           hover:shadow-lg hover:shadow-[#C9A962]/20;
+  }
+  
+  .btn-secondary {
+    @apply border-2 border-[#1A1A1A] text-[#1A1A1A] px-8 py-4 rounded-full 
+           transition-all duration-300 hover:bg-[#1A1A1A] hover:text-white;
+  }
+  
+  .card-treatment {
+    @apply relative overflow-hidden rounded-2xl bg-white shadow-sm 
+           transition-all duration-500 hover:shadow-xl hover:shadow-[#C9A962]/10 
+           hover:-translate-y-2 cursor-pointer;
+  }
+  
+  .text-gold {
+    color: var(--color-gold);
+  }
+  
+  .bg-gold {
+    background-color: var(--color-gold);
+  }
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
