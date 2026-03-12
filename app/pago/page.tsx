@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/supabase'; // Asegúrate de tener tu cliente de Supabase importado
 
 export default function PagoPage() {
   const searchParams = useSearchParams();
+  const router = useRouter(); // MODIFICACIÓN: Importado useRouter para redirigir tras el pago
   const [reservaData, setReservaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false); // MODIFICACIÓN: Estado para deshabilitar botón mientras procesa
 
   useEffect(() => {
     // Datos que vienen de Calendly en la URL
@@ -18,10 +21,12 @@ export default function PagoPage() {
     const name = searchParams.get('name');
     const email = searchParams.get('email');
     const whatsapp = searchParams.get('a1');
+    const leadId = searchParams.get('state'); // MODIFICACIÓN: Recuperamos el leadId pasado desde Calendly
 
     if (eventUuid) {
       setReservaData({
         eventUuid,
+        leadId, // Guardamos el leadId para la actualización
         professionalName,
         address,
         name,
@@ -30,12 +35,35 @@ export default function PagoPage() {
         fecha: new Date().toLocaleDateString('es-AR')
       });
       
-      // TODO: Actualizar en Supabase: estado "turno_agendado"
-      console.log('Actualizando estado a: turno_agendado', { eventUuid, email });
+      console.log('Reserva cargada, esperando pago:', { eventUuid, email });
     }
     
     setLoading(false);
   }, [searchParams]);
+
+  // MODIFICACIÓN: Nueva función para simular el pago y actualizar la BD
+  const handleSimularPago = async () => {
+    setIsProcessing(true);
+    
+    if (reservaData?.leadId) {
+      const { error } = await supabase
+        .from('pacientes_interesados')
+        .update({ 
+          estado: 'pago_realizado',
+          calendly_event_id: reservaData.eventUuid // Guardamos el ID del evento de Calendly en la nueva columna
+        })
+        .eq('id', reservaData.leadId);
+
+      if (!error) {
+        // Redirigimos a la página de éxito tras confirmar
+        router.push('/reserva-exitosa');
+      } else {
+        console.error('Error al actualizar DB:', error);
+        alert('Hubo un problema al confirmar el pago. Intentá nuevamente.');
+      }
+    }
+    setIsProcessing(false);
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
@@ -97,7 +125,7 @@ export default function PagoPage() {
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex justify-between text-lg font-medium">
                   <span>Total</span>
-                  <span className="text-[#C9A962]">$45.000</span> {/* TODO: dinámico según tratamiento */}
+                  <span className="text-[#C9A962]">$45.000</span>
                 </div>
               </div>
             </div>
@@ -105,14 +133,11 @@ export default function PagoPage() {
 
           {/* Botón de pago Mercado Pago */}
           <button 
-            onClick={() => {
-              // TODO: Integrar Mercado Pago
-              // Al confirmar pago, actualizar estado a "pago_confirmado"
-              alert('Aquí se abriría Mercado Pago. Después del pago, estado cambia a: pago_confirmado');
-            }}
-            className="w-full bg-[#C9A962] text-[#1A1A1A] py-4 rounded-full font-medium text-lg transition-all duration-300 hover:bg-[#1A1A1A] hover:text-white mb-4"
+            onClick={handleSimularPago}
+            disabled={isProcessing}
+            className="w-full bg-[#C9A962] text-[#1A1A1A] py-4 rounded-full font-medium text-lg transition-all duration-300 hover:bg-[#1A1A1A] hover:text-white mb-4 disabled:opacity-50"
           >
-            Pagar con Mercado Pago
+            {isProcessing ? 'Procesando...' : 'Pagar con Mercado Pago'}
           </button>
 
           <p className="text-xs text-center text-gray-500">
