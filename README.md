@@ -37,4 +37,4 @@ Zona Oeste de Buenos Aires, Argentina.
 
 - Profesionales independientes certificados
 - Comisión 70% profesional / 30% plataforma
-- Un solo vehículo de logística (fase inicial)
+- Un solo vehículo de logística (fase inicial.)
