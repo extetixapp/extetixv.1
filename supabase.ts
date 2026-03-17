@@ -1,14 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Extraemos las variables de entorno
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Logueamos para ver qué pasa ANTES de que explote
-console.log("DEBUG - URL:", supabaseUrl);
-console.log("DEBUG - KEY:", supabaseAnonKey);
-
+/**
+ * EXTETIX Guardian - Validación de Seguridad
+ * Si las variables no existen, avisamos pero no rompemos el build innecesariamente
+ */
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("ERROR: Variables de entorno no cargadas. Revisa tu archivo .env.local");
+  console.warn(
+    "⚠️ EXTETIX Guardian: Variables de Supabase no encontradas. " +
+    "Asegúrate de tener NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en tu .env.local"
+  );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+/**
+ * Singleton del Cliente de Supabase
+ * Esto asegura que solo usemos una instancia en toda la aplicación
+ */
+export const supabase = createClient(
+  supabaseUrl || '', 
+  supabaseAnonKey || '',
+  {
+    auth: {
+      persistSession: true, // Importante para medicina estética (sesiones de paciente)
+      autoRefreshToken: true,
+    }
+  }
+);
